@@ -1,0 +1,3 @@
+{
+    "login":"SELECT * FROM `users` WHERE user_name = 'uesrname' AND password ='password'"
+}

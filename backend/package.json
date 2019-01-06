@@ -1,0 +1,25 @@
+{
+  "name": "online_store_backend",
+  "version": "1.0.0",
+  "description": "a rest api in mvc pattern",
+  "main": "express.js",
+  "dependencies": {
+    "express": "^4.16.4",
+    "mysql": "^2.16.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "test",
+    "start": "node express.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zvimoe/shopping-online-site.git"
+  },
+  "author": "zvi sondhelm",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zvimoe/shopping-online-site/issues"
+  },
+  "homepage": "https://github.com/zvimoe/shopping-online-site#readme"
+}
