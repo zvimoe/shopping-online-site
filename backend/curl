@@ -1,0 +1,1 @@
+curl -d '{"first_name":"Test", "last_name":"tster","email":"testt@test.com","user_name":"testi","role":"2","password":"test123","city":"hifa","street":"alaozeron"}' -H "Content-Type: application/json" -X POST http://localhost:8081/register
