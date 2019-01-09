@@ -1,4 +1,5 @@
 var con = require('../database.js');
+var Ctrl = ('../inc/Controller.js')
 var md5 = require('md5');
 
 function login(data, callback) {
@@ -27,11 +28,20 @@ uniValidate(data.user_name, 'user_name', 'users',(res)=>{
         console.log(res);
         if (res == true) {
     
-            var query = buildInsertQuery(data)
-            console.log(query);
-            var rows = callDB(query,(rows)=>{
-                console.log(rows);
-                callback(null, rows)
+            // var query = buildInsertQuery(data)
+            // console.log(query);
+            // var rows = callDB(query,(rows)=>{
+            //     console.log(rows);
+            //     callback(null, rows)
+            // })
+            
+            Ctrl.Create(data,'users',(err,rows)=>{
+                   if(err){
+                       callback(err,null)
+                   }
+                   if(rows){
+                       callback(null,rows)
+                   }
             })
             
         }
