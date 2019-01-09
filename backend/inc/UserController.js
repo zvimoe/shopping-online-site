@@ -22,7 +22,8 @@ function login(data, callback) {
     
 }
 function register(data, callback){
-    uniValidate(data.user_name, 'user_name', 'users',(res)=>{
+//use Joi here    
+uniValidate(data.user_name, 'user_name', 'users',(res)=>{
         console.log(res);
         if (res == true) {
     
@@ -48,10 +49,11 @@ function update(data, callback) {
     var rows = callDB(query)
     callback(null, rows)
 }
-function remove(data, callback) {
-    var query = "DELETE * FROM users WHERE id = " + data.id
-    var rows = callDB(query)
-    callback(null, rows)
+function remove(id, callback) {
+    var query = "DELETE FROM users WHERE id = " + id
+    callDB(query,(rows)=>{
+          callback(null, rows)
+     })
 }
 function buildInsertQuery(data, methud, table) {
     var qstring = "INSERT INTO users ("

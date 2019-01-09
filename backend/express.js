@@ -93,12 +93,24 @@ app.post('/register', function (req, res) {
                 res.send(err)
             }
             else {
-                res.send("an error acurred please try again later")
+                res.send("an error accurred please try again later")
             }
         }
 
     }); // get the body data of post
 
+})
+app.delete('/user/:id',function(req, res){
+   
+    Ctrl.remove(req.params.id, (err, result) => {
+        if (err) {
+            res.status('404').send('user not found')
+        }
+        if(result){
+            res.send(result)
+        }
+
+    })
 })
 
 // Start the server

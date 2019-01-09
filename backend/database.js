@@ -1,12 +1,12 @@
 const mysql = require('mysql');
 
-var executeQuery =function(quary,callback){
+var executeQuery =function(query,callback){
 const con = mysql.createConnection(
     // connection details
     {
         host: 'localhost',
         user: 'root',
-        password: '',
+        password: 'ponyExpress',
         database: 'online_store'
     }
 );
@@ -22,7 +22,7 @@ con.connect(function (err) {
 
 // 4. crud : insert
 // use backtick `` for free text
-con.query(quary, function (err, rows) {
+con.query(query, function (err, rows) {
     var arr=[]
     if (err) {
         callback(err)
