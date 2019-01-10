@@ -6,7 +6,7 @@ const con = mysql.createConnection(
     {
         host: 'localhost',
         user: 'root',
-        password: 'ponyExpress',
+        password: '',
         database: 'online_store'
     }
 );

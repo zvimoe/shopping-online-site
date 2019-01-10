@@ -1,26 +1,74 @@
 var con = require('../database.js');
 
-function Create(data,table,callback){
-    var query = buildInsertQuery(data,table)
-    console.log(query);
-    callDB(query,(err,rows)=>{
-        if (err){
-            callback(err)
+function Create(table) {
+
+    return function (data, callback) {
+        var query = buildInsertQuery(data, table)
+        console.log(query);
+        con.executeQuery(query, (err, rows) => {
+            if (err) {
+                callback(err)
+            }
+            callback(null, rows)
+        })
+    }
+}
+function Read(table) {
+
+    return function (id, callback) {
+        let read = "";
+        if (id) {
+            read = " WHERE id = " + id;
         }
-        callback(null, rows)
-    })
-}
-function Read(){
+        else {
+            read = "";
+        }
+        var query = "SELECT * FROM " + table + read
+        con.executeQuery(query, (err, rows) => {
+            if (err) {
+                callback(err)
+            }
+            callback(null, rows)
+        })
+    }
 
 }
-function Update(){
+function Update(table) {
+    return function (data, callback) {
 
-}
-function Delete(){
+        //update query build
 
+        let query = "UPDATE " + table + " SET ";
+        let id = data.id;
+        delete data['id'];
+        for (const key in data) {
+                query+= key+" = '"+data[key]+"',"    
+            }
+        let query2= "WHERE id = '"+id+"'"
+        query  = query.replace(/.$/, query2)
+        console.log(query)
+        con.executeQuery(query, (err, rows) => {
+            if (err) {
+                callback(err)
+            }
+            callback(null, rows)
+        })
+    }
 }
-function buildInsertQuery(data,table) {
-    var qstring = "INSERT INTO "+table+" ("
+function Delete(table) {
+    return function(id,callback){
+        var query = "DELETE FROM " + table + " WHERE id = " + id
+        con.executeQuery(query, (err, rows) => {
+            if (err) {
+                callback(err)
+            }
+            callback(null, rows)
+        })
+    }
+    
+}
+function buildInsertQuery(data, table) {
+    var qstring = "INSERT INTO " + table + " ("
     var values = ")VALUES("
     for (const key in data) {
         if (key == 'password') {
@@ -36,15 +84,7 @@ function buildInsertQuery(data,table) {
     var query = qstring.replace(/.$/, val)
     return query;
 }
-function callDB(query,callback) {
-    con.executeQuery(query, (err, rows) => {
-        if (err) {
-            console.log(err)
-            callback("database error")
-        }
-       callback(rows);
-    })
-}
+
 
 module.exports.Create = Create;
 module.exports.Read = Read;

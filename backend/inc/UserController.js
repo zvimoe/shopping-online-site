@@ -1,6 +1,7 @@
 var con = require('../database.js');
-var Ctrl = ('../inc/Controller.js')
+var Ctrl = require('./Controller.js')
 var md5 = require('md5');
+const table = 'users'
 
 function login(data, callback) {
     var password = md5(data.password);
@@ -17,25 +18,20 @@ function login(data, callback) {
     LEFT JOIN orders ON users.id = orders.user_id 
     WHERE password='` + password + "' AND user_name ='" + data.user_name + "'";
     console.log(query);
-    var rows = callDB(query,(rows)=>{
+    con.executeQuery(query,(err,rows)=>{
+        if (err){
+            callback(err)
+        }
         callback(null, rows)
     })
-    
 }
 function register(data, callback){
 //use Joi here    
-uniValidate(data.user_name, 'user_name', 'users',(res)=>{
+uniValidate(data.user_name, 'user_name', table,(res)=>{
         console.log(res);
         if (res == true) {
-    
-            // var query = buildInsertQuery(data)
-            // console.log(query);
-            // var rows = callDB(query,(rows)=>{
-            //     console.log(rows);
-            //     callback(null, rows)
-            // })
             
-            Ctrl.Create(data,'users',(err,rows)=>{
+            Ctrl.Create(data,table,(err,rows)=>{
                    if(err){
                        callback(err,null)
                    }
@@ -53,35 +49,36 @@ uniValidate(data.user_name, 'user_name', 'users',(res)=>{
         }
     })
 }
-function update(data, callback) {
-    var query = "UPDATE `users` SET `id`=[value-1],`first_name`=[value-2],`last_name`=[value-3],`email`=[value-4],`user_name`=[value-5],`role`=[value-6],`password`=[value-7],`city`=[value-8],`street`=[value-9] WHERE id=" + id
-    //query bulid here 
-    var rows = callDB(query)
-    callback(null, rows)
-}
-function remove(id, callback) {
-    var query = "DELETE FROM users WHERE id = " + id
-    callDB(query,(rows)=>{
-          callback(null, rows)
-     })
-}
-function buildInsertQuery(data, methud, table) {
-    var qstring = "INSERT INTO users ("
-    var values = ")VALUES("
-    for (const key in data) {
-        if (key == 'password') {
-            var element = md5(data[key])
+var read = Ctrl.Read(table)
+
+var update = Ctrl.Update(table);
+    
+function remove(id,table,callback) {
+    var query = "DELETE FROM "+table+" WHERE id = " + id
+    con.executeQuery(query,(err,rows)=>{
+        if (err){
+            callback(err)
         }
-        else {
-            var element = data[key];
-        }
-        qstring += key + ','
-        values += "'" + element + "',"
-    }
-    var val = values.replace(/.$/, ")")
-    var query = qstring.replace(/.$/, val)
-    return query;
+        callback(null, rows)
+    })
 }
+// function buildInsertQuery(data, methud, table) {
+//     var qstring = "INSERT INTO users ("
+//     var values = ")VALUES("
+//     for (const key in data) {
+//         if (key == 'password') {
+//             var element = md5(data[key])
+//         }
+//         else {
+//             var element = data[key];
+//         }
+//         qstring += key + ','
+//         values += "'" + element + "',"
+//     }
+//     var val = values.replace(/.$/, ")")
+//     var query = qstring.replace(/.$/, val)
+//     return query;
+// }
 function uniValidate(value, column, table,callback) {
     let query = "SELECT * FROM " + table + " WHERE " + column + " = '" + value + "'"
     console.log(query);
@@ -98,20 +95,9 @@ function uniValidate(value, column, table,callback) {
         }
     })
 }
-function callDB(query,callback) {
-    con.executeQuery(query, (err, rows) => {
-        if (err) {
-            console.log(err)
-            callback("database error")
-        }
-       callback(rows);
-    })
-}
-
-
 module.exports.login = login;
 module.exports.register = register;
+module.exports.read = read;
 module.exports.update = update;
 module.exports.remove = remove;
-
 
