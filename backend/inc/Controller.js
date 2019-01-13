@@ -1,5 +1,8 @@
 var con = require('../database.js');
 
+// a controller to handle crud functions 
+// and return the function to ohter classes to use 
+
 function Create(table) {
 
     return function (data, callback) {
@@ -17,30 +20,22 @@ function Read(table) {
 
     return function (id, callback) {
         let read = "";
-        if (id) {
-            read = " WHERE id = " + id;
-        }
-        else {
-            read = "";
-        }
+        if (id) read = " WHERE id = " + id;
+        if (!id) read = "";
         var query = "SELECT * FROM " + table + read
         con.executeQuery(query, (err, rows) => {
-            if (err) {
-                callback(err)
-            }
-            callback(null, rows)
+            if (err)  callback(err)
+            if (rows) callback(null,rows)
         })
     }
 
 }
 function Update(table) {
-    return function (data, callback) {
+    return function (id,params, callback) {
 
         //update query build
 
         let query = "UPDATE " + table + " SET ";
-        let id = data.id;
-        delete data['id'];
         for (const key in data) {
                 query+= key+" = '"+data[key]+"',"    
             }

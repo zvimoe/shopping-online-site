@@ -49,36 +49,12 @@ uniValidate(data.user_name, 'user_name', table,(res)=>{
         }
     })
 }
-var read = Ctrl.Read(table)
+var read = Ctrl.Read(table);
 
 var update = Ctrl.Update(table);
     
-function remove(id,table,callback) {
-    var query = "DELETE FROM "+table+" WHERE id = " + id
-    con.executeQuery(query,(err,rows)=>{
-        if (err){
-            callback(err)
-        }
-        callback(null, rows)
-    })
-}
-// function buildInsertQuery(data, methud, table) {
-//     var qstring = "INSERT INTO users ("
-//     var values = ")VALUES("
-//     for (const key in data) {
-//         if (key == 'password') {
-//             var element = md5(data[key])
-//         }
-//         else {
-//             var element = data[key];
-//         }
-//         qstring += key + ','
-//         values += "'" + element + "',"
-//     }
-//     var val = values.replace(/.$/, ")")
-//     var query = qstring.replace(/.$/, val)
-//     return query;
-// }
+var remove = Ctrl.Delete(table);
+
 function uniValidate(value, column, table,callback) {
     let query = "SELECT * FROM " + table + " WHERE " + column + " = '" + value + "'"
     console.log(query);

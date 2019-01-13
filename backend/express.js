@@ -3,17 +3,33 @@ var bodyParser = require("body-parser");
 var fs = require('fs')
 var UserCtrl = require('./inc/UserController')
 var ItemCtrl = require('./inc/ItemController')
+var session = require('express-session');
+var FileStore = require('session-file-store')(session);
 const path = require('path');
 
+
 var app = express();
+app.use(require('morgan')('dev'));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use('/node_modules', express.static(path.join(__dirname.replace('\server-side', ''), 'node_modules')))
 app.use('/client', express.static(path.join(__dirname.replace('\server-side', ''), 'client')))
-
-// Express - to serve the client
-// body parser - To handle the data of post
-
+app.use(session({
+    name: 'server-session-cookie-id',
+    secret: 'my express secret',
+    saveUninitialized: true,
+    resave: true,
+    store: new FileStore()
+  }));
+  app.use(function printSession(req, res, next) {
+    console.log('req.session', req.session);
+    return next();
+  });
+  app.get('/', function initViewsCount(req, res, next) {
+    if (typeof req.session.usrID === 'number') {
+    }
+    return next();
+  });
 // Listen to '/' in GET Verb methods - serve the main Angular index.html file
 app.get('/', function (req, res) {
     // console.log(path.join(__dirname.replace('\server-side', ''), 'node_modules'));
@@ -27,42 +43,83 @@ app.get('/', function (req, res) {
         })
     });
 });
+app.post('/login', function (req, res) {
+
+    UserCtrl.login(req.body, (err, rows) => {
+        if (err) return res.status('500').send(err)
+        if (rows && rows.length > 0){
+            req.session.user = rows;
+            return res.send(JSON.stringify(rows));
+        } 
+        res.send("user doese'nt exsist")
+
+    }); // get the body data of post
+})
 // returns a user by id 
 app.get('/user/:id', function (req, res) {
 
-    UserCtrl.read(req.params.id,(err,rows)=>{
-        if(err){
-            res.status('400').send('server error')
+    if (!Number(req.params.id)) return res.status('502').send('"id" must be a number')
+    UserCtrl.read(req.params.id, (err, rows) => {
+        console.log(err)
+        console.log(rows)
+        console.log('done')
+        if (err) return res.status('502').send('server error')
+        if (rows) {
+            if (rows.length > 0) return res.send(rows)
         }
-        else if(rows){
-            if(rows.length>0){
-                res.send(rows)
-            }
-            else{
-                res.status('402').send('no users match this id')
-                }
-            }
+        return res.status('404').send('user not found')
     })
-});
+
+})
+
 // returns all users
-app.get('/users',function(req,res){
-    UserCtrl.read(null,(err,rows)=>{
-        if(err){
-            res.status('400').send('server error');
-        }
-        else{
-            res.send(rows);
-        }
+app.get('/users', function (req, res) {
+    UserCtrl.read(null, (err, rows) => {
+        if (err) return res.status('502').send(err);
+        return res.send(rows);
+        
     })
 });
-app.get('/items',function(req,res){
-    UserCtrl.read(null,(err,rows)=>{
-        if(err){
-            res.status('400').send('server error');
+app.post('/user', function (req, res) {
+    UserCtrl.register(req.body, (err, rows) => {
+        if (err) return res.status('502').send(err);
+        console.log(err)
+        if (rows) if (rows.affectedRows > 0) {
+            UserCtrl.login(req.body, (err, rows1) => {
+                if (err) return res.status('502').send(err);
+                if (rows1) if (rows1.length > 0) {
+                    if (rows1) return res.send(JSON.stringify(rows1))
+                    return res.send("an error acurred please registar again")
+                }
+            })
         }
-        else{
-            res.send(rows);
-        }
+    })
+})
+app.put('/user/:id', function (req, res) {
+    if (!Number(req.params.id)) return res.status('502').send('"id" must be a number')
+    UserCtrl.update(req.params.id, req.body, (err, rows) => {
+        if (err) return res.status('502').send(err);
+        if (rows) if (rows.length > 0) return res.send(rows);
+        return res.status('404').send('user not found')
+    })
+
+    return res.status('404').send('user not found')
+})
+app.delete('/user/:id', function (req, res) {
+    if (req.session.userid != "1") return res.status('400').send('you need to be an admin for this action')
+    if (!Number(req.params.id)) return res.status('500').send('"id" must be a number')
+    UserCtrl.remove(req.params.id, (err, result) => {
+        if (err) return res.status('502').send(err)
+        if (result.affectedRows < 1) return res.status('404').send('user not found')
+        return res.send(result)
+    })
+})
+app.get('/items', function (req, res) {
+    ItemCtrl.read(null, (err, rows) => {
+        if (err) return res.status('400').send('server error');
+
+        return res.send(rows);
+
     })
 });
 app.post('/items', function (req, res) {
@@ -78,7 +135,6 @@ app.get('/orders', function (req, res) {
     })
 
 });
-// Listen to '/item' in POST Verb methods
 app.post('/login', function (req, res) {
 
     UserCtrl.login(req.body, (err, rows) => {
@@ -95,60 +151,7 @@ app.post('/login', function (req, res) {
     }); // get the body data of post
 
 })
-app.post('/register', function (req, res) {
-    UserCtrl.register(req.body, (err, rows) => {
-        console.log(err)
 
-        if (rows) {
-            if (rows.affectedRows > 0) {
-                UserCtrl.login(req.body, (err, rows1) => {
-                    if (rows1.length > 0) {
-                        if (rows1) {
-
-                            res.send(JSON.stringify(rows1));
-                        }
-                    }
-
-                    else
-                        res.send("an error acurred please registar again")
-
-                });
-            }
-        }
-        else {
-            if (err) {
-                res.send(err)
-            }
-            else {
-                res.send("an error accurred please try again later")
-            }
-        }
-
-    }); // get the body data of post
-
-})
-app.put('/user/:id',function(req,res){
-    UserCtrl.update(req.body,(err,rows)=>{
-        if(err){
-            res.status('400').send(err);
-        }
-        else{
-            res.send(rows);
-        }
-    })
-})
-app.delete('/user/:id',function(req, res){
-   
-    UserCtrl.remove(req.params.id, (err, result) => {
-        if (err) {
-            res.status('404').send('user not found')
-        }
-        if(result){
-            res.send(result)
-        }
-
-    })
-})
 // Start the server
 var server = app.listen(8081, function () {
     console.log('connected')
