@@ -1,4 +1,6 @@
 var con = require('../database.js');
+var md5 = require('md5');
+
 
 // a controller to handle crud functions 
 // and return the function to ohter classes to use 
@@ -79,9 +81,55 @@ function buildInsertQuery(data, table) {
     var query = qstring.replace(/.$/, val)
     return query;
 }
+function Find (value, column, table,callback) {
+    let query = "SELECT * FROM " + table + " WHERE " + column + " = '" + value + "'"
+    console.log(query);
+    con.executeQuery(query, (err, rows) => {
+        if (err) {
+            console.log(err)
+            callback(err)
+        }
+        else if (rows.length > 0) {
+            callback(rows)
+        }
+        else {
+            callback('404')
+        }
+    })
+}
+function getInitialdata(obj,callback){
+    let columns = {user:obj}
+       
+       Find(obj.cart_id,'cart_id','cart_items',(res)=>{
+        columns.cart_items = res
+       
+       Find('1','id','items',(res)=>{
+        columns.items = res
+       
+       Read('categories')(null,(err,res)=>{
+              if (err) columns.items = null
+              else columns.categories = res
+              callback(null,columns)
+       })
+      
+    })
+    
+})
+
+       
+       
+
+       
+
+    
+        
+}
+
 
 
 module.exports.Create = Create;
 module.exports.Read = Read;
 module.exports.Update = Update;
 module.exports.Delete = Delete;
+module.exports.Find = Find;
+module.exports.getInitialdata = getInitialdata;

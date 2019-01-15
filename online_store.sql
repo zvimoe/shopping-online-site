@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 06, 2019 at 05:54 PM
+-- Generation Time: Jan 15, 2019 at 11:50 PM
 -- Server version: 10.1.22-MariaDB
 -- PHP Version: 7.1.4
 
@@ -31,6 +31,7 @@ SET time_zone = "+00:00";
 CREATE TABLE `carts` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
+  `active` int(1) NOT NULL,
   `date` date NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -38,8 +39,9 @@ CREATE TABLE `carts` (
 -- Dumping data for table `carts`
 --
 
-INSERT INTO `carts` (`id`, `user_id`, `date`) VALUES
-(1, 1, '2019-01-16');
+INSERT INTO `carts` (`id`, `user_id`, `active`, `date`) VALUES
+(1, 1, 0, '2019-01-16'),
+(2, 1, 1, '2019-01-16');
 
 -- --------------------------------------------------------
 
@@ -61,8 +63,8 @@ CREATE TABLE `cart_items` (
 --
 
 INSERT INTO `cart_items` (`id`, `item_id`, `amount`, `price`, `total`, `cart_id`) VALUES
-(1, 1, 1, 4545, 4545, 1),
-(2, 2, 1, 3232, 3232, 1);
+(1, 1, 1, 4545, 4545, 2),
+(2, 2, 1, 3232, 3232, 2);
 
 -- --------------------------------------------------------
 
@@ -117,11 +119,12 @@ CREATE TABLE `orders` (
   `user_id` int(11) NOT NULL,
   `cart_id` int(11) NOT NULL,
   `final_price` int(11) NOT NULL,
-  `shipping_city` int(11) NOT NULL,
-  `shipping_street` int(11) NOT NULL,
-  `shipping_date` int(11) NOT NULL,
-  `order_date` int(11) NOT NULL,
-  `last_digits` int(11) NOT NULL
+  `shipping_city` varchar(255) NOT NULL,
+  `shipping_street` varchar(255) NOT NULL,
+  `shipping_date` date NOT NULL,
+  `order_date` date NOT NULL,
+  `last_digits` int(11) NOT NULL,
+  `active` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -147,7 +150,14 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `first_name`, `last_name`, `email`, `user_name`, `role`, `password`, `city`, `street`) VALUES
-(1, 'zvi', 'sondhelm', 'zvi@sondhelm.com', 'zvimoe', '1', '81dc9bdb52d04dc20036dbd8313ed055', 'j-lem', 'strous');
+(1, 'tmoe', 'sodhe', '', 'zvimoe', '', '81dc9bdb52d04dc20036dbd8313ed055', 'wrwr', 'fdfd'),
+(17, 'tmoer', 'sodher', '', 'erererer', '', 'bb4b80b7e49e1423bb0e7f89387339c4', 'wrwrr', 'fdfdr'),
+(157, 'tmoerr', 'sodher', '', 'erererertr', '', '38e6c98afe859106f556168f6f6b4d2d', 'wrwrrr', 'fdfdrr'),
+(343, 'terr', 'sodherfff', 'adasdafasfas@jfdf.com', 'erererertrfff', '', '412bc37848556ae178682f5b95a3c86f', 'wrwrrrfff', 'fdfdrrfff'),
+(1578, 'tmoerr', 'sodher', '', 'erererertr', '', '38e6c98afe859106f556168f6f6b4d2d', 'wrwrrr', 'fdfdrr'),
+(565767, 't', 'sodherfff', '', 'erererertrfff', '', '75c71356fa1afdb43cfd23830b6b3a84', 'wrwrrrfff', 'fdfdrrfff'),
+(1578353, 'tmoerrff', 'sodherfff', '', 'erererertrfff', '', '75c71356fa1afdb43cfd23830b6b3a84', 'wrwrrrfff', 'fdfdrrfff'),
+(343435566, 'terr', 'sodherfff', 'adasdafasfas@jfdf.com', 'erererertrfff', '', '412bc37848556ae178682f5b95a3c86f', 'wrwrrrfff', 'fdfdrrfff');
 
 --
 -- Indexes for dumped tables
@@ -185,7 +195,9 @@ ALTER TABLE `items`
 -- Indexes for table `orders`
 --
 ALTER TABLE `orders`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `order_to_user` (`user_id`),
+  ADD KEY `order_to_cart` (`cart_id`);
 
 --
 -- Indexes for table `users`
@@ -201,7 +213,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `carts`
 --
 ALTER TABLE `carts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 --
 -- AUTO_INCREMENT for table `cart_items`
 --
@@ -221,12 +233,37 @@ ALTER TABLE `items`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 --
--- AUTO_INCREMENT for table `users`
+-- Constraints for dumped tables
 --
-ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;COMMIT;
+
+--
+-- Constraints for table `carts`
+--
+ALTER TABLE `carts`
+  ADD CONSTRAINT `cart_item_to_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+
+--
+-- Constraints for table `cart_items`
+--
+ALTER TABLE `cart_items`
+  ADD CONSTRAINT `cart_item_to-cart` FOREIGN KEY (`cart_id`) REFERENCES `carts` (`id`),
+  ADD CONSTRAINT `cart_item_to_item` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`);
+
+--
+-- Constraints for table `items`
+--
+ALTER TABLE `items`
+  ADD CONSTRAINT `item_to_catagory` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`);
+
+--
+-- Constraints for table `orders`
+--
+ALTER TABLE `orders`
+  ADD CONSTRAINT `order_to_cart` FOREIGN KEY (`cart_id`) REFERENCES `carts` (`id`),
+  ADD CONSTRAINT `order_to_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
