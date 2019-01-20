@@ -3,6 +3,7 @@ var bodyParser = require("body-parser");
 var fs = require('fs')
 var UserCtrl = require('./inc/UserController')
 var ItemCtrl = require('./inc/ItemController')
+var CartCtrl = require('./inc/CartController')
 var Ctrl = require('./inc/Controller')
 var session = require('express-session');
 var FileStore = require('session-file-store')(session);
@@ -59,16 +60,17 @@ app.post('/login', function (req, res) {
         if (err) return res.status('500').send(err)
         if (rows && rows.length > 0){
             rows[0].new = 0 ;
-            req.session.user = rows;
-            return res.send(rows);
+            req.session.user = rows[0];
+            return res.send(rows[0]);
         } 
         if (rows && rows.length < 1) return res.status('404').send("one or more of the details are incorrect")
 
     }); // get the body data of post
 })
 app.get('/start_shopping',function(req,res){
-    if(req.session.user[0]){
-        Ctrl.getInitialdata(req.session.user[0],(err,data)=>{
+
+    if(req.session.user){
+        Ctrl.getInitialdata(req.session.user,(err,data)=>{
             if (err) return res.status('500').send(err)
             if (data) return res.send(data)
         })
@@ -124,7 +126,7 @@ app.post('/user', function (req, res) {
                 if (err) return res.status('502').send(err);
                 if (rows1) if (rows1.length > 0) {
                     rows1[0].new= 1 
-                    req.session.user = rows1;
+                    req.session.user = rows1[0];
                     if (rows1) return res.send(JSON.stringify(req.session.user))
                    // return res.send("an error acurred please registar again")
                 }
@@ -151,21 +153,34 @@ app.delete('/user/:id', function (req, res) {
         return res.send(result)
     })
 })
-app.get('/items', function (req, res) {
-    ItemCtrl.read(null, (err, rows) => {
-        if (err) return res.status('400').send('server error');
-
-        return res.send(rows);
-
+app.get('/cart_items', function (req, res) {
+    CartCtrl.readI(req.session.user.cart_id).then((rows)=>{
+        res.send(rows)
+    }
+    ).catch((err)=>{
+        res.send(err)
     })
 });
-app.post('/items', function (req, res) {
+app.post('/gjg', function (req, res) {
 
     UserCtrl.items.get(function (err, td) {
         err ? console.log('error' + err) : res.end(JSON.stringify(td));
     })
 
 });
+app.post('/cart_items',function(req,res){
+      let suser =req.session.user;
+      params = req.body;
+      params.cart_id = suser.cart_id;
+      console.log(params)
+     CartCtrl.add(params,(err,res1)=>{
+          if(err) return res.status('500').send(err)
+           if(res1)if(res1.affectedRows>0){
+               res.send('item added')
+           }
+      })
+
+})
 app.get('/orders', function (req, res) {
     dal.dal('select * from suppliers', function (td) {
         res.end(JSON.stringify(td));

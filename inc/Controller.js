@@ -1,5 +1,6 @@
 var con = require('../database.js');
 var md5 = require('md5');
+var moment = require('moment');
 
 
 // a controller to handle crud functions 
@@ -26,23 +27,23 @@ function Read(table) {
         if (!id) read = "";
         var query = "SELECT * FROM " + table + read
         con.executeQuery(query, (err, rows) => {
-            if (err)  callback(err)
-            if (rows) callback(null,rows)
+            if (err) callback(err)
+            if (rows) callback(null, rows)
         })
     }
 
 }
 function Update(table) {
-    return function (id,params, callback) {
+    return function (id, params, callback) {
 
         //update query build
 
         let query = "UPDATE " + table + " SET ";
         for (const key in data) {
-                query+= key+" = '"+data[key]+"',"    
-            }
-        let query2= "WHERE id = '"+id+"'"
-        query  = query.replace(/.$/, query2)
+            query += key + " = '" + data[key] + "',"
+        }
+        let query2 = "WHERE id = '" + id + "'"
+        query = query.replace(/.$/, query2)
         console.log(query)
         con.executeQuery(query, (err, rows) => {
             if (err) {
@@ -53,7 +54,7 @@ function Update(table) {
     }
 }
 function Delete(table) {
-    return function(id,callback){
+    return function (id, callback) {
         var query = "DELETE FROM " + table + " WHERE id = " + id
         con.executeQuery(query, (err, rows) => {
             if (err) {
@@ -62,7 +63,7 @@ function Delete(table) {
             callback(null, rows)
         })
     }
-    
+
 }
 function buildInsertQuery(data, table) {
     var qstring = "INSERT INTO " + table + " ("
@@ -81,7 +82,7 @@ function buildInsertQuery(data, table) {
     var query = qstring.replace(/.$/, val)
     return query;
 }
-function Find (value, column, table,callback) {
+function Find(value, column, table, callback) {
     let query = "SELECT * FROM " + table + " WHERE " + column + " = '" + value + "'"
     console.log(query);
     con.executeQuery(query, (err, rows) => {
@@ -97,39 +98,52 @@ function Find (value, column, table,callback) {
         }
     })
 }
-function getInitialdata(obj,callback){
-    let columns = {user:obj}
-       
-       Find(obj.cart_id,'cart_id','cart_items',(res)=>{
-        columns.cart_items = res
-       
-       Find('1','id','items',(res)=>{
-        columns.items = res
-       
-       Read('categories')(null,(err,res)=>{
-              if (err) columns.items = null
-              else columns.categories = res
-              callback(null,columns)
-       })
-      
-    })
+function getInitialdata(obj, callback) {
+    let columns = { user: obj }
     
-})
+        Find('1', 'id', 'items', (res1) => {
+            columns.items = res1
 
-       
-       
+            Read('categories')(null, (err, res2) => {
+                if (err) columns.items = null
+                else columns.categories = res2
+        if (obj.cart_id) {
+                Find(obj.cart_id, 'cart_id', 'cart_items', (res) => {
+                columns.cart_items = res
+                    callback(null, columns)
+            })
+        }else{
+            let cartData = {
+                user_id:obj.id,
+                date:moment().format("YYYY-MM-DD"),
+                active:1
+            }
+            console.log(cartData)
+            Create('carts')(cartData,(req,res)=>{
+                 columns.cart_items=null
+                 columns.user.cart_id = res.insertId
+                 callback(null,columns)
+            })
+        }
 
-       
+            })
 
-    
-        
-}
+        })
 
 
 
-module.exports.Create = Create;
-module.exports.Read = Read;
-module.exports.Update = Update;
-module.exports.Delete = Delete;
-module.exports.Find = Find;
-module.exports.getInitialdata = getInitialdata;
+
+
+
+
+
+    }
+
+
+
+    module.exports.Create = Create;
+    module.exports.Read = Read;
+    module.exports.Update = Update;
+    module.exports.Delete = Delete;
+    module.exports.Find = Find;
+    module.exports.getInitialdata = getInitialdata;
