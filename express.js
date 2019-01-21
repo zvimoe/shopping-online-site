@@ -4,6 +4,7 @@ var fs = require('fs')
 var UserCtrl = require('./inc/UserController')
 var ItemCtrl = require('./inc/ItemController')
 var CartCtrl = require('./inc/CartController')
+var OrderCtrl = require('./inc/OrderController')
 var Ctrl = require('./inc/Controller')
 var session = require('express-session');
 var FileStore = require('session-file-store')(session);
@@ -70,9 +71,10 @@ app.post('/login', function (req, res) {
 app.get('/start_shopping',function(req,res){
 
     if(req.session.user){
-        Ctrl.getInitialdata(req.session.user,(err,data)=>{
-            if (err) return res.status('500').send(err)
-            if (data) return res.send(data)
+        Ctrl.getInitialdata(req.session.user).then((data)=>{
+             return res.send(data)
+        }).catch((err)=>{
+            return res.send('error'+err)
         })
         }
     else return res.status("502").send("Please Login in order to start shopping")
@@ -80,41 +82,41 @@ app.get('/start_shopping',function(req,res){
 })
 app.get('/find-user/:id',function(req,res){
     let prm = req.params
-    Ctrl.Find(prm.id,'id','users',(finding)=>{
-        if (finding=='404')return res.status(404).send('not found')
-        return res.send('found')
+    Ctrl.Find(prm.id,'id','users').then((finding)=>{
+        if (finding.length==0)return res.status(404).send('not found')
+        return res.send(finding)
     })
 })
 app.get('/find-item/:id',function(req,res){
     let prm = req.params
     Ctrl.Find(prm.name,'name','items',(finding)=>{
-        if (finding=='404')return res.status(404).send('not found')
+        if (finding==[])return res.status(404).send('not found')
         return res.send('found')
+    }).catch((err)=>{
+        return res.send(err)
     })
 })
 // returns a user by id 
 app.get('/user/:id', function (req, res) {
 
     if (!Number(req.params.id)) return res.status('502').send('"id" must be a number')
-    UserCtrl.read(req.params.id, (err, rows) => {
-        console.log(err)
-        console.log(rows)
-        console.log('done')
-        if (err) return res.status('502').send('server error')
-        if (rows) {
+    UserCtrl.read(req.params.id).then((rows) => {
+    
             if (rows.length > 0) return res.send(rows)
-        }
-        return res.status('404').send('user not found')
+        
+       else return res.status('404').send('user not found')
+    }).catch((err)=>{
+        return res.status('502').send('server error')
     })
 
 })
 
 // returns all users
 app.get('/users', function (req, res) {
-    UserCtrl.read(null, (err, rows) => {
+    UserCtrl.read(null).then((rows) => {
+        return res.send(rows)
+    }).catch((err)=>{
         if (err) return res.status('502').send(err);
-        return res.send(rows);
-        
     })
 });
 app.post('/user', function (req, res) {
@@ -125,7 +127,7 @@ app.post('/user', function (req, res) {
             UserCtrl.login(req.body, (err, rows1) => {
                 if (err) return res.status('502').send(err);
                 if (rows1) if (rows1.length > 0) {
-                    rows1[0].new= 1 
+                    rows1[0].new = 1 
                     req.session.user = rows1[0];
                     if (rows1) return res.send(JSON.stringify(req.session.user))
                    // return res.send("an error acurred please registar again")
@@ -136,21 +138,21 @@ app.post('/user', function (req, res) {
 })
 app.put('/user/:id', function (req, res) {
     if (!Number(req.params.id)) return res.status('502').send('"id" must be a number')
-    UserCtrl.update(req.params.id, req.body, (err, rows) => {
-        if (err) return res.status('502').send(err);
+    UserCtrl.update(req.params.id, req.body).then((rows) => {
         if (rows) if (rows.length > 0) return res.send(rows);
         return res.status('404').send('user not found')
-    })
-
+        
+    }).catch((err)=>{})
     return res.status('404').send('user not found')
 })
 app.delete('/user/:id', function (req, res) {
     if (req.session.userid != "1") return res.status('400').send('you need to be an admin for this action')
     if (!Number(req.params.id)) return res.status('500').send('"id" must be a number')
-    UserCtrl.remove(req.params.id, (err, result) => {
-        if (err) return res.status('502').send(err)
+    UserCtrl.remove(req.params.id).then((result) => {
         if (result.affectedRows < 1) return res.status('404').send('user not found')
         return res.send(result)
+    }).catch((err)=>{
+       return res.status('502').send(err)
     })
 })
 app.get('/cart_items', function (req, res) {
@@ -173,13 +175,36 @@ app.post('/cart_items',function(req,res){
       params = req.body;
       params.cart_id = suser.cart_id;
       console.log(params)
-     CartCtrl.add(params,(err,res1)=>{
-          if(err) return res.status('500').send(err)
+     CartCtrl.add(params).then((res1)=>{
+          
            if(res1)if(res1.affectedRows>0){
-               res.send('item added')
+              return res.send('item added')
            }
+      }).catch((err)=>{
+        return res.status('500').send(err)
       })
 
+})
+app.post('/order',function(req,res){
+    var user = req.session.user
+       OrderCtrl.create(req.body).then((res)=>{
+           user.orders_id = res.insertId 
+           user.orders_active = 1
+       })
+       .then(
+           CartCtrl.updateCart(req.body.cart_id,{active:0})
+        .then(
+            CartCtrl.createCart(req.body.user_id)
+        .then((res)=>{
+               user.cart_id = res.insertId
+                 
+            }).then(()=>{
+                req.session.user=user
+                res.send(user)
+            })
+        )
+    )
+       .catch((err)=>{res.status('500').send(err)})
 })
 app.get('/orders', function (req, res) {
     dal.dal('select * from suppliers', function (td) {

@@ -42,14 +42,13 @@ function register(data, callback){
     Joi.validate(data, schema,(error, value) =>{     
         console.log(error)
             if (error) callback(error,null)
-           else  Ctrl.Create(table)(data,(err,rows)=>{
-                if(err){
-                    callback(err,null)
-                }
-                if(rows){
-                    callback(null,rows)
-                }
-         })
+           else  Ctrl.Create(table)(data).then((rows)=>
+           {
+               callback(null,rows)}
+            ).catch((err)=>{
+                callback(err)
+            })
+      
     });
 }
 var read = Ctrl.Read(table);
