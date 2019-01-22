@@ -16,7 +16,7 @@ app.use(require('morgan')('dev'));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use('/node_modules', express.static(path.join(__dirname.replace('\server-side', ''), 'node_modules')))
-app.use('/client', express.static(path.join(__dirname.replace('\server-side', ''), 'client')))
+app.use('/', express.static('public'))
 app.use(session({
     name: 'server-session-cookie-id',
     secret: 'my express secret',

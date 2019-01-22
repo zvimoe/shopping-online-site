@@ -1,0 +1,15 @@
+*{
+   
+}
+.box{
+    width: 29%;
+    height: 200px;
+    margin:2%;
+    float:right;
+    border:solid
+}
+.login{
+    width:80%;
+    margin:1%;
+
+}

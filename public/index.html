@@ -1,1 +1,21 @@
-hello
+<!DOCTYPE html>
+<html ng-app="online-store">
+    <head>
+         <script src="../node_modules/angular/angular.min.js"></script>
+         <script src="../node_modules/angular-route/angular-route.min.js"></script>
+         <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
+         <script src="index.js"></script>
+         <link rel="stylesheet" href="index.css">
+
+         
+    </head>
+    <body>
+        <nav>
+            <a href="/" >order</a>
+            <a href="#!showcart ">shopping cart</a>
+            <a href="#!contact ">contact me!</a>
+            <a href="#!books">back to home </a>
+        </nav>
+        <div ng-view></div>
+    </body>
+</html>
