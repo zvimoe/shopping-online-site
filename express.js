@@ -84,7 +84,7 @@ app.get('/find-user/:id',function(req,res){
     let prm = req.params
     Ctrl.Find(prm.id,'id','users').then((finding)=>{
         if (finding.length==0)return res.status(404).send('not found')
-        return res.send(finding)
+        return res.send('found')
     })
 })
 app.get('/find-item/:id',function(req,res){

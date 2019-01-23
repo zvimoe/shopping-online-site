@@ -1,6 +1,7 @@
 'use strict'
 var store = angular.module("online-store", ["ngRoute"]);
 store.config(function ($routeProvider) {
+
     $routeProvider
         .when("/", {
             // resolve: {
@@ -12,121 +13,215 @@ store.config(function ($routeProvider) {
             // },
             templateUrl: "mainpage.html"
         })
-        // .when("/order", {
-        //     templateUrl: "order.html"
-        // })
-        // .when("/showcart", {
-        //     templateUrl: "showcart.html"
-        // })
-        // .when("/contact", {
-        //     templateUrl: "contact.html"
-        // })
-        // .when("/books", {
-        //     templateUrl: "books.html"
-        // })
+        .when("/register", {
+            templateUrl: "register.html"
+        })
+    
 
 })
-store.service('serviceComp', function () {
-    this.cart = []
-    this.add = function (x) {
-        this.cart.push(x);
-        console.log(this.cart)
-    }
-    this.getItemsCart = function () {
-        return JSON.stringify(this.cart)
-    }
-})
-store.service('orderservice', function () {
-    this.placeorder = function (user, books) {
-        console.log(user);
-        console.log(books)
-    }
 
+store.service("ApiCall", function ($http,$location) {
 
-})
-store.filter('nameToUpper', function () {
-
-    function stringToUpper(string) {
-        let a = string.toUpperCase()
-        return a;
-    }
-
-
-    return function (input) {
-        for (let i = 0; i < input.length; i++) {
-            input[i].name = stringToUpper(input[i].name)
+    this.Login = function (userName, Password, onSuccess, onError) {
+        let data = {
+            user_name: userName,
+            password: Password
         }
-        return input
+        let url = 'http://localhost:8081/login'
+        return Post(url, data, onSuccess, onError)
+    }
+    this.findUser = function (id, onSuccess, onError) {
+        let url = 'http://localhost:8081/find-user/' + id
+
+        Get(url, onSuccess, onError)
 
     }
+    this.register= function(data,onSuccess, onError){
+        console.log(data)
+       let url = 'http://localhost:8081/user'
+        Post(url,data,onSuccess, onError)
+    }
+    function Post(url, data, onSuccess, onError) {
+        $http({
+            method: 'POST',
+            url: url,
+            type: 'application/x-www-form-urlencoded',
+            data: data
+        }).then(onSuccess, onError)
+    }
+    function Get(url, onSuccess, onError) {
+        $http({
+            method: 'GET',
+            url: url,
+            type: 'application/x-www-form-urlencoded',
+        }).then(onSuccess, onError)
+    }
 })
-store.filter('bestseller', function () {
+store.controller('mainpagecontroller', function login($scope, ApiCall, $rootScope,$location) {
+    $scope.userName = ""
+    $scope.password = ""
+    $scope.message = ""
+    this.onSuccess = function (res) {
+        console.log(res)
+        $rootScope.personName = 'Hello ' + res.data.first_name + '!';
+        //popup with res data 
+        //if res is null 
+    }
+    function onError(response) {
+        console.log('error');
+        console.log(response);
+
+    }
+
+    $scope.submitlogin = () => {
+        ApiCall.Login($scope.userName, $scope.password, this.onSuccess, this.onError)
+    }
+
+})
+store.controller('register', function($scope, ApiCall,$location) {
+    var data1 = {
+        id: {
+            type: "number",
+            class: "login",
+            placeHolder: "ID",
+            val: ""
+        },
+        email: {
+            type: "email",
+            class: "login",
+            placeHolder: "Email",
+            val: ""
+        },
+        password1: {
+            type: "password",
+            class: "login",
+            placeHolder: "Password",
+            val: ""
+        },
+        password2: {
+            type: "password",
+            class: "login",
+            placeHolder: "Confirm Password",
+            val: ""
+        },
+
+    }
+    var data2 = {
+
+        city: {
+            type: "text",
+            class: "login",
+            placeHolder: "City",
+            val: ""
+        },
+        street: {
+            type: "text",
+            class: "login",
+            placeHolder: "Street",
+            val: ""
+        },
+        first_name: {
+            type: "text",
+            class: "login",
+            placeHolder: "Name",
+            val: ""
+        },
+        last_name: {
+            type: "text",
+            class: "login",
+            placeHolder: "Last Name",
+            val: ""
+        }
+    }
+    $scope.data=data1
+    $scope.formNumber = 1
+
+    function showForm2() {
+        data1 = $scope.data
+        $scope.data = data2;
+        $scope.formNumber = 2
+        console.log($scope.data)
+    }
+    function valadate1(data) {
+        return new Promise(
+            function (resolve, reject) {
+                var message = []
+                if (typeof (data.id.val) != 'number') {
+                    console.log(typeof (data.id.val))
+                    message.push('ID must be a number')
+                }
+                if (data.id.val == "") message.push('the ID field is reqiured')
+                if (!data.email.val) message.push('Email is incorrect')
+                if (data.email.val == "") message.push('the email field is reqiured')
+                ApiCall.findUser(data.id.val, os, oe)
+                function os(res) {
+                    console.log(res)
+                    if (res.data == 'found') {
+                        message.push('User ID already exists')
+                        // for some reson does not work on second submit todo 
+                    }
+                }
+                function oe(err) {
+                    if (err.status = '404') return
+                    else console.log(err)
+                }
 
 
+                if (data.password1.val != data.password2.val) {
+                    message.push("passwords don't match")
+                }
 
+                resolve(message)
 
-    return function (input, isbn) {
-
-        for (let i = 0; i < input.length; i++) {
-            if (input[i].isbn == isbn) {
-                input[i].note = 'best seller'
             }
+        )
+    }
+    $scope.submit = () => {
+        $scope.message = ""
+        if ($scope.formNumber == 1) {
+            valadate1($scope.data).then((res) => {
+                if (res.length > 0) {
+                    $scope.message = res
+                }
+                else {
+                    showForm2()
+                }
+            })
         }
-        return input
+        if ($scope.formNumber == 2) {
+            ApiCall.register(
+                {
+                    user_name: data2.first_name.val,
+                    password: data1.password1.val,
+                    first_name: data2.first_name.val,
+                    last_name: data2.last_name.val,
+                    street: data2.street.val,
+                    city: data2.city.val,
+                    id: data1.id.val,
+                    email: data1.email.val
 
-    }
-})
-store.filter('changeImgSize', function () {
-
-
-
-
-    return function (input, isbn) {
-
-        for (let i = 0; i < input.length; i++) {
-            if (input[i].isbn == isbn) {
-                input[i].img.width = '176';
-                input[i].img.height = '176';
-            }
+                },
+                this.onSuccess,
+                this.onError
+            )
         }
-        return input
-
     }
-})
-
-
-
-
-store.controller('book1', function ($scope, serviceComp) {
-    $scope.bookarray = [
-        new book('igrot moshe', 'igrot-moshe.gif', 123),
-        new book('mishne brura', 'misnabrura.jpg', 345),
-        new book('tanach', 'tanach.jpg', 678)
-
-    ]
-
-    function book(name, img, isbn) {
-        this.name = name;
-        this.img = {
-            img: img,
-        }
-        this.isbn = isbn,
-            this.note;
-
+    this.onSuccess = function (res) {
+        $location.path('/')
     }
-    $scope.add = function (isbn) {
-        serviceComp.add(isbn)
-
-    }
-});
-store.controller('showCart', function showCartCtrl($scope, serviceComp) {
-    $scope.showCart = function () {
-        $scope.isbns = serviceComp.getItemsCart();
+    this.onError = function (err) {
+        console.log(err.data.details[0].message)
+        $scope.message = [err.data.details[0].message]
     }
 })
 store.controller('placeOrder', function ($scope, serviceComp, orderservice) {
     $scope.user = {
-        firstname: "",
+        firstname: {
+            type: "text",
+            class: "login",
+            placeHolder: "",
+            val: ""
+        },
         lastname: ""
     }
     $scope.order = function () {

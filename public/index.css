@@ -1,15 +1,51 @@
-*{
-   
-}
+
 .box{
-    width: 29%;
-    height: 200px;
+    width:29%;
+    height: 400px;
     margin:2%;
     float:right;
-    border:solid
+    border:solid;
+    text-align: center;
+    
+}
+.big-box{
+    height: 600px;
+    margin:2%;
+    border:solid;
+    text-align: center;
+    border:solid;
 }
 .login{
     width:80%;
     margin:1%;
+
+}
+nav{
+    height: 50px;
+    padding: 1%;
+    display:inline-block
+}
+header{
+    border-bottom-color: darkgrey;
+    border-bottom-width: thick;
+    border: solid;
+    height: 62px
+}
+
+#username {
+    margin-right: 10%;
+    float: right;
+}
+#logo {
+    margin-left: 2%;
+    float: left;
+    background-image: url('img/logo.png');
+    background-size:     cover;                      
+    background-repeat:   no-repeat;
+    background-position: center center;  
+    width: 57px;
+    height: 57px
+    
+
 
 }

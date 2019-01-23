@@ -1,0 +1,21 @@
+<div class = "container" ng-controller="register">
+ 
+        <div class="row">
+            <div class="col-sm-1 col-md-2 col-lg-3"></div>
+            <div class="col-sm-10 col-md-8 col-lg-6 big-box">
+                <h1>Register Form {{formNumber}}</h1>
+                <form name = "registerForm">
+                    <div ng-repeat = "(key,value) in data">
+                  <input  type="{{value.type}}" class ="{{value.class}}" ng-model="data[key].val" placeHolder = "{{value.placeHolder}}" class = "login">
+                </div>
+
+                <div ng-repeat="m in message">{{m}}</div>
+                
+
+
+            </form>
+                <button ng-click= "submit()">Submit</button>
+            </div>  
+            <div class="col-sm-1 col-md-2 col-lg-3"></div>
+        </div>
+    </div>

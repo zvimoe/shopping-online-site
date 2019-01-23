@@ -10,12 +10,17 @@
          
     </head>
     <body>
-        <nav>
+        <header>
+        <nav class =  "container">  
             <a href="/" >order</a>
             <a href="#!showcart ">shopping cart</a>
             <a href="#!contact ">contact me!</a>
             <a href="#!books">back to home </a>
+             <span id="username">  {{personName}}</span> 
         </nav>
+        <a id="logo"></a>
+    </header>
+        
         <div ng-view></div>
     </body>
 </html>

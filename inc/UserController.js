@@ -15,6 +15,7 @@ const schema = {
 const table = 'users'
 
 function login(data, callback) {
+    console.log('hello')
     var password = md5(data.password);
     console.log(password);
     var query = `SELECT 
