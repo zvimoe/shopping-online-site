@@ -1,84 +1,148 @@
 'use strict'
-var store = angular.module("online-store", ["ngRoute"]);
-store.config(function ($routeProvider) {
+var storeApp = angular.module("online-store", ["ngRoute",'ui.bootstrap']);
+
+storeApp.config(function ($routeProvider) {
 
     $routeProvider
         .when("/", {
-            // resolve: {
-            //     "check": function ($location, loginchecker) {
-            //         if (1+1==3) {
-            //             $location.path('/')
-            //         }
-            //     }
-            // },
-            templateUrl: "mainpage.html"
+            templateUrl: "mainpage.html",
+            controller:'mainpagecontroller',
+           
+
         })
         .when("/register", {
             templateUrl: "register.html"
         })
-    
+        .when('/store', { 
+            templateUrl: 'store.html'
+        })
+        .when('/dashbored',{  
+            templateUrl:'/dashbored.html' 
+        })
 
+        
 })
+storeApp.service("ApiCall", function ($http, $location) {
+    this.load = function () {
 
-store.service("ApiCall", function ($http,$location) {
+        return Get('getsession')
 
-    this.Login = function (userName, Password, onSuccess, onError) {
+    }
+    this.Login = function (userName, Password) {
         let data = {
             user_name: userName,
             password: Password
         }
-        let url = 'http://localhost:8081/login'
-        return Post(url, data, onSuccess, onError)
+        let url = 'login'
+        return Post('login', data)
     }
-    this.findUser = function (id, onSuccess, onError) {
-        let url = 'http://localhost:8081/find-user/' + id
-
-        Get(url, onSuccess, onError)
-
+    this.Logout = function () {
+        return Get('logout')
     }
-    this.register= function(data,onSuccess, onError){
+    this.findUser = function (id) {
+        let url = 'find-user/' + id
+        return Get(url)
+    }
+    this.register = function (data) {
         console.log(data)
-       let url = 'http://localhost:8081/user'
-        Post(url,data,onSuccess, onError)
+        let url = 'user'
+        return Post(url, data)
     }
-    function Post(url, data, onSuccess, onError) {
-        $http({
+    this.saveInitialdata =function(data){
+        localStorage.setItem('Idta',JSON.stringify(data))
+    }
+    this.getInitialdata = function(data){    
+        return JSON.parse(localStorage.getItem('Idta'))
+    }
+    this.getShopData=function(){
+       return Get('start_shopping')
+    }
+    this.getCitems = function(id){
+        return Get('category/items/'+id)
+    }
+    function Post(url, data) {
+        return $http({
             method: 'POST',
-            url: url,
+            url: 'http://localhost:8081/' + url,
             type: 'application/x-www-form-urlencoded',
             data: data
-        }).then(onSuccess, onError)
+        })
     }
-    function Get(url, onSuccess, onError) {
-        $http({
+    function Get(url) {
+        return $http({
             method: 'GET',
-            url: url,
+            url: 'http://localhost:8081/' + url,
             type: 'application/x-www-form-urlencoded',
-        }).then(onSuccess, onError)
+        })
     }
 })
-store.controller('mainpagecontroller', function login($scope, ApiCall, $rootScope,$location) {
-    $scope.userName = ""
-    $scope.password = ""
-    $scope.message = ""
-    this.onSuccess = function (res) {
-        console.log(res)
-        $rootScope.personName = 'Hello ' + res.data.first_name + '!';
-        //popup with res data 
-        //if res is null 
-    }
-    function onError(response) {
-        console.log('error');
-        console.log(response);
+storeApp.controller('mainpagecontroller', function ($scope, ApiCall, $rootScope, $location, $route) {
+    $rootScope.rightTmp;
+    $scope.userName;
+    $scope.password;
+    $scope.message;
+    ApiCall.load().then((user) => {
+        console.log(user.data.session)
+        $scope.ItemCount = user.data.itemsCount
+        $scope.OrderCount = user.data.orderCount
+        if (user.data.session && user.data.session.length != 0) {
+            ApiCall.saveInitialdata(user.data.session)
+            loadUser(user.data.session)
+        }
+        else {
+            $scope.rightTmp = "login.html"
+        }
+
+    })
+    function loadUser(user) {
+        if (user.role == 1) {
+            $rootScope.personName = 'Hello hell!';
+            $location.path("/dashbored");
+
+
+        }
+        else {
+            $rootScope.personName = 'Hello ' + user.first_name + '!';
+            $scope.rightTmp = "startShopping.html";
+            $scope.notice = {}
+            if (user.carts_active) {
+                $scope.notice.carts = 'you have an active cart'
+                $scope.shopBtn = 'Continue'
+            }
+            else {
+                $scope.shopBtn = 'Start'
+            }
+            if (user.orders_active) {
+                $scope.notice.orders = 'you have an active order'
+            }
+            if (user.new == 1) {
+                $scope.notice.new = 'wecome new user'
+            }
+        }
 
     }
+    $scope.Logout = () => {
+        $rootScope.personName = ""
+        ApiCall.Logout().then(
+            $route.reload
+        )
 
+    }
     $scope.submitlogin = () => {
-        ApiCall.Login($scope.userName, $scope.password, this.onSuccess, this.onError)
+        console.log($scope)
+        ApiCall.Login($scope.userName, $scope.password).then((res) => {
+            console.log(res)
+            loadUser(res.data)
+            $route.reload()
+        }).catch((err) => {
+            console.log(err);
+            $scope.message = err.data
+
+        })
     }
 
 })
-store.controller('register', function($scope, ApiCall,$location) {
+storeApp.controller('register', function ($scope, ApiCall, $location) {
     var data1 = {
         id: {
             type: "number",
@@ -133,7 +197,7 @@ store.controller('register', function($scope, ApiCall,$location) {
             val: ""
         }
     }
-    $scope.data=data1
+    $scope.data = data1
     $scope.formNumber = 1
 
     function showForm2() {
@@ -153,18 +217,17 @@ store.controller('register', function($scope, ApiCall,$location) {
                 if (data.id.val == "") message.push('the ID field is reqiured')
                 if (!data.email.val) message.push('Email is incorrect')
                 if (data.email.val == "") message.push('the email field is reqiured')
-                ApiCall.findUser(data.id.val, os, oe)
-                function os(res) {
+                ApiCall.findUser(data.id.val).then(function (res) {
                     console.log(res)
                     if (res.data == 'found') {
                         message.push('User ID already exists')
-                        // for some reson does not work on second submit todo 
                     }
-                }
-                function oe(err) {
+                }).catch(function (err) {
                     if (err.status = '404') return
                     else console.log(err)
-                }
+                })
+
+
 
 
                 if (data.password1.val != data.password2.val) {
@@ -200,21 +263,20 @@ store.controller('register', function($scope, ApiCall,$location) {
                     id: data1.id.val,
                     email: data1.email.val
 
-                },
-                this.onSuccess,
-                this.onError
-            )
+                }
+
+            ).then((res) => {
+                $location.path('/')
+            }).catch(
+                function (err) {
+                    console.log(err.data.details[0].message)
+                    $scope.message = [err.data.details[0].message]
+                })
         }
     }
-    this.onSuccess = function (res) {
-        $location.path('/')
-    }
-    this.onError = function (err) {
-        console.log(err.data.details[0].message)
-        $scope.message = [err.data.details[0].message]
-    }
+
 })
-store.controller('placeOrder', function ($scope, serviceComp, orderservice) {
+storeApp.controller('placeOrder', function ($scope, serviceComp, orderservice) {
     $scope.user = {
         firstname: {
             type: "text",
@@ -228,7 +290,7 @@ store.controller('placeOrder', function ($scope, serviceComp, orderservice) {
         orderservice.placeorder($scope.user, serviceComp.getItemsCart())
     }
 })
-store.controller('contact', function ($scope) {
+storeApp.controller('contact', function ($scope) {
     $scope.contact = {
         tel: "0533153255",
         address: "havkook 39/16 beit shemesh israel 9913900",
@@ -240,3 +302,43 @@ store.controller('contact', function ($scope) {
 
 
 })
+storeApp.controller('store', function ($scope,ApiCall,$uibModal,$rootScope,) {
+    ApiCall.getShopData().then((res)=>{
+        $scope.data = res.data
+        console.log(res)
+    })
+    $scope.loadCitems = (id)=>{
+        ApiCall.getCitems(id).then((res)=>{
+            console.log(res)
+            $scope.data.items = res.data
+        })
+    }
+    $scope.open = function(obj){
+        console.log(obj)
+        var modalInstance =  $uibModal.open({
+          templateUrl: "item-model.html",
+          controller:'itemModel',
+          resolve:{
+          item:function(){
+              return obj
+          }
+        },
+          size: '',
+        });
+    
+    modalInstance.result.then(function (selectedItem) {
+        $ctrl.selected = selectedItem;
+      }, function () {
+        $log.info('Modal dismissed at: ' + new Date());e
+      });
+    }
+})
+storeApp.controller('itemModel',function ($uibModalInstance,$scope, item)  {
+  $scope.data = item
+  $scope.amount = 0
+  $scope.finaleprice = 0
+  
+
+    
+})
+

@@ -32,9 +32,11 @@ function Read(table) {
                 if (id) read = " WHERE id = " + id;
                 if (!id) read = "";
                 var query = "SELECT * FROM " + table + read
+                console.log(query)
                 con.executeQuery(query, (err, rows) => {
+                    console.log(rows.length)
                     if (err) reject(err)
-                    if (rows) resolve(null, rows)
+                    if (rows) resolve(rows)
                 })
             })
         }

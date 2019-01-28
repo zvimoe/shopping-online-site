@@ -44,6 +44,23 @@ app.get('/', function (req, res) {
         
     });
 });
+// get the session from the servs it to the Angular app 
+app.get('/getsession',function(req,res){
+
+   var data={session:req.session.user};
+   console.log(data)
+   OrderCtrl.read(null).then(
+        (res1)=>{
+            data.orderCount =  res1.length
+        }
+    ).then(
+        ItemCtrl.read(null).then((res2)=>{
+             data.itemsCount = res2.length
+             res.send(data)
+        })
+    )
+    
+})
 app.get('/logout',function(req,res){
     req.session.user=[];
     fs.readFile('public/index.html', 'utf8', function (err, data) {
@@ -51,13 +68,13 @@ app.get('/logout',function(req,res){
             console.log(err);
         }
         if (data) return res.send(data)
-        return
         
     });
 })
 app.post('/login', function (req, res) {
 
     UserCtrl.login(req.body, (err, rows) => {
+        console.log(req.body)
         if (err) return res.status('500').send(err)
         if (rows && rows.length > 0){
             rows[0].new = 0 ;
@@ -110,7 +127,15 @@ app.get('/user/:id', function (req, res) {
     })
 
 })
-
+app.get('/category/items/:id',function(req,res){
+    Ctrl.Find(req.params.id,'category_id','items').then(
+        (res1)=>{
+            res.send(res1)
+        }
+    ).catch((err)=>{
+           res.status('500').send(err)
+    })
+})
 // returns all users
 app.get('/users', function (req, res) {
     UserCtrl.read(null).then((rows) => {

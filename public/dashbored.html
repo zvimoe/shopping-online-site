@@ -1,0 +1,28 @@
+<div ng-controller="store">
+
+
+    <div class="row">
+        <div class="col-sm-4 col-md-5 ">
+            <div class=" main-boxes solid">
+                <h1>Cart</h1>
+                    <div class="item" ng-repeat ="(key,value) in data.items" ></div>
+            </div>
+        </div>
+
+        <div class="col-sm-8 col-md-7 ">
+                    {{data.windowObj}}
+            <div class="main-boxes solid">
+                    <h1>Store</h1>
+                <div class="categories solid">
+                    <a class="category" href="" ng-click = "loadCitems(value.id)" ng-repeat="(key,value) in data.categories">
+                        {{value.name}}
+                    </a>
+                </div>
+                <div class="item"  ng-click = "open(value)" ng-repeat ="(key,value) in data.items" >
+                        <p>{{value.name}}</p>
+                        <sm>{{value.price}} shekel</sm>
+                    <img src="{{value.pic_url}}" alt="404 {{value.pic_url}}" width = "50px" i>
+               </div>
+            </div>
+        </div>
+    </div>

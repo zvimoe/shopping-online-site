@@ -45,7 +45,32 @@ header{
     background-position: center center;  
     width: 57px;
     height: 57px
+
+}
+.notice{
+    background-color: rgb(187, 187, 47);
+    width:80%;
+    height: 100px;
+    margin:10%
+}
+.solid{
+ border:solid;
+}
+.main-boxes{
+    height: 600px;
     
+}
 
-
+.categories{
+ height: 40px
+}
+.item{
+    text-align: center;
+    width:100px;
+    background-color:whitesmoke;
+    color:black;
+    margin:2%
+}
+.item sm{
+    font-size:10px
 }

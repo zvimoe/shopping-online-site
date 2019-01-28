@@ -4,24 +4,17 @@
         <div class="col-sm-1 col-md-2"></div>
         <div class="col-sm-10 col-md-8">
 
-                <div class="box">{{userName}}
-                        {{password}}
+                <div class="box">
+                   <h1>we have {{ItemCount}} items</h1> 
+                   
+                   <h1>and we had {{OrderCount}} odrers</h1> 
+                      {{password}}
                     </div>
                 
-                    <div class="box">{{userName}}
-                        {{password}}
+                    <div class="box">  
+                       <h1> We are the best store in the world</h1>
                     </div>
-
-            <div class="box">
-                <h1>Login</h1>
-               <input class="login"type="text" ng-model="userName" id="1"placeHolder="Name">
-                <input class="login"type="password" ng-model="password" id="2"placeHolder = "Password">
-                <button type="submit" ng-click="submitlogin()">Login</button>
-                <a href="#!register" class="login" >register</a>
-            </div>
-           
-            
-           
+                    <div class="login"  ng-include="rightTmp"></div>   
         </div>  
         <div class="col-sm-1 col-md-2"></div>
     </div>
