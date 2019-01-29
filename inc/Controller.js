@@ -133,36 +133,12 @@ function getInitialdata(obj){
         function(resolve,reject){
             var columns = { user: obj }
             //sould call itemscontroller
-            Find('1', 'id', 'items').then((res1) => {
+            Find('1', 'category_id', 'items').then((res1) => {
                 columns.items = res1
                 // should call to catagories controller
                return Read('categories')(null)
             }).then((res2) => {
-                columns.categories = res2
-                
-                if (obj.cart_id) return Find(obj.cart_id, 'cart_id', 'cart_items')
-                else {
-                    // could call to cartController.create(cart_id)
-                    let cartData = {
-                        user_id:obj.id,
-                        date:moment().format("YYYY-MM-DD"),
-                        active:1
-                    }
-                    console.log(cartData)
-
-                    return Create('carts')(cartData)
-                }
-                
-            }).then(function(res){
-                console.log(res)
-                if(res.insertId){
-                    columns.cart_items=null
-                    columns.user.cart_id = res.insertId
-                }
-                else{
-                    columns.cart_items=res
-                }
-                
+                columns.categories = res2    
                 console.log(columns)
                 resolve(columns)
             }).catch(

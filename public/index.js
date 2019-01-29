@@ -7,8 +7,6 @@ storeApp.config(function ($routeProvider) {
         .when("/", {
             templateUrl: "mainpage.html",
             controller:'mainpagecontroller',
-           
-
         })
         .when("/register", {
             templateUrl: "register.html"
@@ -59,6 +57,13 @@ storeApp.service("ApiCall", function ($http, $location) {
     }
     this.getCitems = function(id){
         return Get('category/items/'+id)
+    }
+    this.getCartItems = function(){
+        return Get('cart_items')
+        
+    }
+    this.postCartItem  = function(data){
+        return Post('cart_items',data)
     }
     function Post(url, data) {
         return $http({
@@ -302,11 +307,12 @@ storeApp.controller('contact', function ($scope) {
 
 
 })
-storeApp.controller('store', function ($scope,ApiCall,$uibModal,$rootScope,) {
+storeApp.controller('store', function ($scope,ApiCall,$uibModal,$route) {
     ApiCall.getShopData().then((res)=>{
         $scope.data = res.data
         console.log(res)
     })
+    
     $scope.loadCitems = (id)=>{
         ApiCall.getCitems(id).then((res)=>{
             console.log(res)
@@ -327,16 +333,32 @@ storeApp.controller('store', function ($scope,ApiCall,$uibModal,$rootScope,) {
         });
     
     modalInstance.result.then(function (selectedItem) {
-        $ctrl.selected = selectedItem;
-      }, function () {
-        $log.info('Modal dismissed at: ' + new Date());e
+        ApiCall.postCartItem(selectedItem).then(
+            (res)=>{
+                console.log(res.data)
+                $scope.data.cart_items = res.data
+                
+
+            }
+        ).then($route.reload)
+      
+        
       });
     }
+    
 })
 storeApp.controller('itemModel',function ($uibModalInstance,$scope, item)  {
   $scope.data = item
   $scope.amount = 0
-  $scope.finaleprice = 0
+  
+  $scope.addToCart =function(){
+    $uibModalInstance.close({
+        item_id:item.id,
+        amount:$scope.amount,
+        price:item.price,
+        total:item.price*$scope.amount
+    });
+  }
   
 
     

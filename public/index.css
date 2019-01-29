@@ -74,3 +74,13 @@ header{
 .item sm{
     font-size:10px
 }
+.itemLarge{
+    text-align: center;
+    width:96%;
+    height:400px;
+    background-color:whitesmoke;
+    color:black;
+    margin:2%;
+    
+
+}

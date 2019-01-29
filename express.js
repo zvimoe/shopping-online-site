@@ -88,7 +88,10 @@ app.post('/login', function (req, res) {
 app.get('/start_shopping',function(req,res){
 
     if(req.session.user){
-        Ctrl.getInitialdata(req.session.user).then((data)=>{
+        Ctrl.getInitialdata(req.session.user).then((res2)=>{
+            return CartCtrl.initialize(res2)
+        }).then((data)=>{
+            
              return res.send(data)
         }).catch((err)=>{
             return res.send('error'+err)
@@ -181,7 +184,7 @@ app.delete('/user/:id', function (req, res) {
     })
 })
 app.get('/cart_items', function (req, res) {
-    CartCtrl.readI(req.session.user.cart_id).then((rows)=>{
+    CartCtrl.read(req.session.user.cart_id).then((rows)=>{
         res.send(rows)
     }
     ).catch((err)=>{
@@ -201,11 +204,12 @@ app.post('/cart_items',function(req,res){
       params.cart_id = suser.cart_id;
       console.log(params)
      CartCtrl.add(params).then((res1)=>{
-          
+         
            if(res1)if(res1.affectedRows>0){
               return res.send('item added')
            }
       }).catch((err)=>{
+          console.log(err)
         return res.status('500').send(err)
       })
 
