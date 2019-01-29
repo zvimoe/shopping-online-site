@@ -201,16 +201,16 @@ app.post('/gjg', function (req, res) {
 app.post('/cart_items',function(req,res){
       let suser =req.session.user;
       params = req.body;
-      params.cart_id = suser.cart_id;
+      params.cart_id = suser.cart_id; 
       console.log(params)
      CartCtrl.add(params).then((res1)=>{
-         
-           if(res1)if(res1.affectedRows>0){
-              return res.send('item added')
+           if(res1){
+            res.send(res1)
            }
+           else throw res1
       }).catch((err)=>{
           console.log(err)
-        return res.status('500').send(err)
+        return res.status('400').send(err)
       })
 
 })
