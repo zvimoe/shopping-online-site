@@ -1,0 +1,16 @@
+<form ref='uploadForm' 
+class ="form-group login"
+id='uploadForm' 
+action='/upload' 
+method='post' 
+encType="multipart/form-data">
+Name: <input class="form-control"  name="name" type="text" reqiured>
+Price: <input class="form-control"  name="price" type="text" reqiured>
+Category  <select class="form-control" name = "category_id" reqiured >
+      <option ng-repeat="(key,value) in data.categories" value="{{value.id}}">{{value.name}}</option>
+  </select>
+Pic<input class="form-control"  type="file" name="itemImg" reqiured/>
+  <input class="form-control"  type='submit' value='Submit!' />
+</form>  
+
+

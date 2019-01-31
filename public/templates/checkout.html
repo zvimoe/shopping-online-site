@@ -1,0 +1,12 @@
+<h1>Order</h1>
+<hr>
+address:
+<input class="form-control login" ng-dblclick="data.city = data.user.city" type="text" ng-model ="data.city" placeholder="City">
+<input class="form-control login" ng-dblclick="data.street = data.user.street"type="text"  ng-model ='data.street'placeholder ="Street">
+<datepicker date-format="yyyy-MM-dd"  style = "width:200px">
+      <input class="form-control login" ng-model="data.date" date-format="yyyy-MM-dd" type="text" placeholder="Date Of shippmint"/>
+</datepicker><br>
+      <hr>
+<input class="form-control login" ng-model="data.cardNumber" type="text" placeholder ="Enter card number here!">
+
+<button class="form-control login" ng-click ="Placeorder()">Place Order</button>

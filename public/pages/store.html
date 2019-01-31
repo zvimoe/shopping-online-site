@@ -1,0 +1,22 @@
+<div>
+    <div class="row">
+        <div class="col-sm-4 col-md-5 ">
+            <!-- <button type="button" class="btn btn-default" ng-click="isCollapsedHorizontal = !isCollapsedHorizontal">Cart</button> -->
+            <!-- <div class="horizontal-collapse" uib-collapse="isCollapsedHorizontal" horizontal> -->
+                <div class="main-boxes solid">
+
+                    <tp-report data='data'></tp-report>
+                    <div ng-include="data.storeRightBar"></div>                          
+                <!-- </div> -->
+            </div>
+        </div>
+        <div class="col-sm-8 col-md-7" container>
+            <div class="main-boxes solid">
+                <div ng-include="data.storeMain"></div>
+                <tp-report data='data'></tp-report>
+
+
+            </div>
+        </div>
+    </div>
+</div>

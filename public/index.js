@@ -1,31 +1,32 @@
 'use strict'
-var storeApp = angular.module("online-store", ["ngRoute", 'ui.bootstrap', 'ngSidebarJS']);
+var storeApp = angular.module("online-store", ["ngRoute", 'ui.bootstrap', 'ngSidebarJS', '720kb.datepicker']);
 
 storeApp.config(function ($routeProvider) {
 
     $routeProvider
         .when("/", {
-            templateUrl: "mainpage.html",
+            templateUrl: "pages/mainpage.html",
             controller: 'mainpagecontroller',
         })
         .when("/register", {
-            templateUrl: "register.html"
+            templateUrl: "pages/register.html"
         })
         .when('/store', {
-            templateUrl: 'store.html',
+            templateUrl: 'pages/store.html',
             controller: 'store',
             resolve: {
                 load: function (ApiCall) {
                     return ApiCall.load().then((res) => {
                         return res;
+                    }).catch((err)=>{
+                        templateUrl = "pages/error.html"
                     })
                 }
             }
         })
-        .when('/checkout',{
-            templateUrl:'checkout.html',
-            templateUrl:'checkout',
-            ontroller: 'store',
+        .when('/checkout', {
+            templateUrl: 'checkout.html',
+            controller: 'checkout',
             resolve: {
                 load: function (ApiCall) {
                     return ApiCall.load().then((res) => {
@@ -85,6 +86,9 @@ storeApp.service("ApiCall", function ($http, $location) {
     this.postCartItem = function (data) {
         return Post('cart_items', data)
     }
+    this.Order = function (data) {
+        return Post('order', data)
+    }
     function Post(url, data) {
         return $http({
             method: 'POST',
@@ -116,30 +120,33 @@ storeApp.controller('mainpagecontroller', function ($scope, ApiCall, $rootScope,
             loadUser(user.data.session)
         }
         else {
-            $scope.rightTmp = "login.html"
+            $scope.rightTmp = "templates/login.html"
         }
 
     })
     function loadUser(user) {
         if (user.role == 1) {
-            $rootScope.personName = 'Hello hell!';
-            $location.path("/dashbored");
+            $rootScope.personName = 'Hello ' + user.first_name + '!';
+            $scope.rightTmp = "templates/startShopping.html";
+            $scope.shopBtn = "Go to Dashbored"
+            $scope.notice = {}
+            $scope.notice.new = "Admin Has The rights to add Items"
 
 
         }
         else {
             $rootScope.personName = 'Hello ' + user.first_name + '!';
-            $scope.rightTmp = "startShopping.html";
+            $scope.rightTmp = "templates/startShopping.html";
             $scope.notice = {}
-            if (user.carts_active) {
-                $scope.notice.carts = 'you have an active cart'
-                $scope.shopBtn = 'Continue'
+            if (user.carts_active == 1) {
+                $scope.notice.carts = 'Welcome Back you have an active cart'
+                $scope.shopBtn = 'Continue Shoppnig'
             }
             else {
-                $scope.shopBtn = 'Start'
+                $scope.shopBtn = 'Start Shoppnig'
             }
             if (user.orders_active) {
-                $scope.notice.orders = 'you have an active order'
+                $scope.notice.orders = 'you have an active order '
             }
             if (user.new == 1) {
                 $scope.notice.new = 'wecome new user'
@@ -246,6 +253,7 @@ storeApp.controller('register', function ($scope, ApiCall, $location) {
                 ApiCall.findUser(data.id.val).then(function (res) {
                     console.log(res)
                     if (res.data == 'found') {
+                        console.log('res')
                         message.push('User ID already exists')
                     }
                 }).catch(function (err) {
@@ -302,37 +310,32 @@ storeApp.controller('register', function ($scope, ApiCall, $location) {
     }
 
 })
-storeApp.controller('placeOrder', function ($scope, serviceComp, orderservice) {
-    $scope.user = {
-        firstname: {
-            type: "text",
-            class: "login",
-            placeHolder: "",
-            val: ""
-        },
-        lastname: ""
-    }
-    $scope.order = function () {
-        orderservice.placeorder($scope.user, serviceComp.getItemsCart())
-    }
-})
-storeApp.controller('contact', function ($scope) {
-    $scope.contact = {
-        tel: "0533153255",
-        address: "havkook 39/16 beit shemesh israel 9913900",
-        email: "zsondhelm@gmial.com"
-
-    }
-})
 storeApp.controller('store', function ($scope, ApiCall, $uibModal, $route, load, $location, $rootScope) {
     if (load.data.session && load.data.session.length != 0) {
         console.log(load.data.session);
         $rootScope.personName = 'Hello ' + load.data.session.first_name;
+        if (load.data.session.role == 1) {
+            var admin = true
+        }
+        else{
+            var admin =null
+        }
+
 
         ApiCall.getShopData().then((res) => {
             $scope.data = res.data
+            $scope.data.cart_total = 0
             console.log(res)
-        })
+        }).then(() => {
+            $scope.data.cart_items.map((item) => {
+                $scope.data.cart_total = $scope.data.cart_total + item.total
+            })
+            if (admin) $scope.data.storeRightBar = 'templates/itemForm.html'
+            else $scope.data.storeRightBar = 'templates/cart.html'
+
+            $scope.data.storeMain = 'templates/items.html'
+        }
+        )
 
         $scope.loadCitems = (id) => {
             ApiCall.getCitems(id).then((res) => {
@@ -340,49 +343,94 @@ storeApp.controller('store', function ($scope, ApiCall, $uibModal, $route, load,
                 $scope.data.items = res.data
             })
         }
+
         $scope.isNavCollapsed = true;
         $scope.isCollapsed = false;
         $scope.isCollapsedHorizontal = false;
-        $scope.storeSize = "col-sm-8 col-md-7"
 
-        $scope.open = function (obj) {
-            console.log(obj)
-            var modalInstance = $uibModal.open({
-                templateUrl: "item-model.html",
-                controller: 'itemModel',
-                resolve: {
-                    item: function () {
-                        return obj
-                    }
-                },
-                size: '',
-            });
+        if (admin) {
+            $scope.open = function (obj) {
+                $scope.fillAdminForm = obj
+            }
+        }
+        else {
+            $scope.open = function (obj) {
+                console.log(obj)
+                var modalInstance = $uibModal.open({
+                    templateUrl: "templates/item-model.html",
+                    controller: 'itemModel',
+                    resolve: {
+                        item: function () {
+                            return obj
+                        }
+                    },
+                    size: '',
+                });
 
-            modalInstance.result.then(function (selectedItem) {
-                var id = selectedItem.item_id
-                $scope.data.cart_items.map((item) => {
-                    console.log(item.item_id + ':' + id)
-                    if (item.item_id == id) {
-                        selectedItem.amount = item.amount + selectedItem.amount
-                        console.log('yeh')
-                    }
+                modalInstance.result.then(function (selectedItem) {
+                    $scope.data.cart_total += selectedItem.total
+                    var id = selectedItem.item_id
+                    $scope.data.cart_items.map((item) => {
+                        console.log(item.item_id + ':' + id)
+                        if (item.item_id == id) {
+                            selectedItem.amount = item.amount + selectedItem.amount
+                            console.log('yeh')
+                        }
+
+                    })
+                    console.log
+                    ApiCall.postCartItem(selectedItem).then(
+                        (res) => {
+                            console.log(res.data)
+                            $scope.data.cart_items = res.data
+
+
+                        }
+                    )
+                });
+                modalInstance.dismiss('err');
+            }
+
+            $scope.Placeorder = function () {
+                ApiCall.Order({
+                    cart_id: $scope.data.user.cart_id,
+                    user_id: $scope.data.user.id,
+                    final_price: $scope.data.cart_total,
+                    shipping_city: $scope.data.city,
+                    shipping_street: $scope.data.street,
+                    shipping_date: $scope.data.date,
+                    card: $scope.data.cardNumber
+                }).then((res) => {
+                    console.log(res)
+                    var modalInstance = $uibModal.open({
+                        backdrop: false,
+                        templateUrl: "templates/thank-you.html",
+                        controller: 'thank-you',
+                        resolve: {
+                            details: function () {
+                                return {
+                                    res: res,
+                                    cart_id: $scope.data.user.cart_id
+                                }
+                            },
+
+
+                        },
+                        size: '',
+                    });
+                    modalInstance.result.then(function (res) {
+                        $location.path('/')
+                    });
+                    modalInstance.dismiss(() => {
+                        console.log('main man')
+                    });
+
+                }).catch((err) => {
+                    console.log(err)
                 })
-                console.log
-                ApiCall.postCartItem(selectedItem).then(
-                    (res) => {
-                        console.log(res.data)
-                        $scope.data.cart_items = res.data
-
-
-                    }
-                )
-            });
-            modalInstance.dismiss('err');
+            }
         }
 
-        $scope.checkout = function(){
-            $location.path('/checkout')
-        }
     }
     else {
         $location.path('/')
@@ -401,58 +449,12 @@ storeApp.controller('itemModel', function ($uibModalInstance, $scope, item) {
         });
     }
 })
-storeApp.controller('store', function ($scope, ApiCall, $uibModal, $route, load, $location, $rootScope) {
-    if (load.data.session && load.data.session.length != 0) {
-        console.log(load.data.session);
-        $rootScope.personName = 'Hello ' + load.data.session.first_name;
+storeApp.controller('thank-you', function ($uibModalInstance, $scope, details) {
+    $scope.data = details.res.data
+    $scope.cart_id = details.cart_id
+    $scope.amount = 0
 
-        ApiCall.getShopData().then((res) => {
-            $scope.data = res.data
-            console.log(res)
-        })
-
-
-        $scope.open = function (obj) {
-            console.log(obj)
-            var modalInstance = $uibModal.open({
-                templateUrl: "item-model.html",
-                controller: 'itemModel',
-                resolve: {
-                    item: function () {
-                        return obj
-                    }
-                },
-                size: '',
-            });
-
-            modalInstance.result.then(function (selectedItem) {
-                var id = selectedItem.item_id
-                $scope.data.cart_items.map((item) => {
-                    console.log(item.item_id + ':' + id)
-                    if (item.item_id == id) {
-                        selectedItem.amount = item.amount + selectedItem.amount
-                        console.log('yeh')
-                    }
-                })
-                console.log
-                ApiCall.postCartItem(selectedItem).then(
-                    (res) => {
-                        console.log(res.data)
-                        $scope.data.cart_items = res.data
-
-
-                    }
-                )
-            });
-            modalInstance.dismiss('err');
-        }
-
-        $scope.checkout = function(){
-            $location.path('/checkout')
-        }
-    }
-    else {
-        $location.path('/')
+    $scope.done = function () {
+        $uibModalInstance.close(details);
     }
 })
-

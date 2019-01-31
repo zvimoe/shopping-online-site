@@ -1,0 +1,14 @@
+<h1>Store</h1>
+<div class="categories solid">
+        <label>Search: <input ng-model="searchText" ng-focus ="loadCitems('all')" ng-blur="loadCitems(1)"></label>
+    <a class="category" href="" ng-click="loadCitems(value.id)" ng-repeat="(key,value) in data.categories">
+        {{value.name}}
+        <span>|</span>
+    </a>
+    
+</div>
+<div class="item item_desc" ng-click="open(value)" ng-repeat="(key,value) in data.items | filter:searchText">
+    <p>{{value.name}}</p>
+    <sm>{{value.price}} shekel</sm>
+    <img src="{{value.pic_url}}" alt="404 {{value.pic_url}}" width="50px">
+</div>

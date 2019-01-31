@@ -7,7 +7,7 @@ var createCart = function (user_id) {
     let cartData = {
         user_id: user_id,
         date: moment().format("YYYY-MM-DD"),
-        active: 1
+        active: 0
     }
     return Ctrl.Create('carts')(cartData)
 }

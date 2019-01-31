@@ -1,0 +1,25 @@
+<div >
+        <tp-report data='data'></tp-report>
+        <h1>Cart</h1>
+        <div class="categories solid">
+                <label>Search: <input ng-model="searchText"></label>
+            </div>
+        <span class="item" ng-repeat="(key,value) in data.cart_items| filter:searchText">
+            <div class ='item_desc'>
+           {{value.name}}<br>
+            total: {{value.total}}$|<br>
+            price for one unit: {{value.price}}$ |<br>
+            amount: {{value.amount}} |<br>
+        </div>
+            <a href =""class ="ex" ng-click = 'deleteCartItem(key)'><span class ="glyphicon glyphicon-remove" ></span></a>
+            <a class =  "plus" ng-click ='plusCartItem(key)'><span class ="glyphicon glyphicon-plus" ></span></a>
+            <a class =  "minus"ng-click = 'minusCartItem(key)'><span class ="glyphicon glyphicon-minus" ></span></a>
+            
+
+            <img src="{{value.pic_url}}" alt="404 {{value.pic_url}}" width="50px">
+         <hr>
+        </span>
+        <h2>Total: {{data.cart_total}}$</h2>
+        <input value = "checkout" type="submit" ng-click="data.storeMain = 'templates/checkout.html';data.storeRightBar = 'templates/checkout-cart.html'"> 
+    </div>
+</div>

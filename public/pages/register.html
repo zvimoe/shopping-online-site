@@ -6,7 +6,7 @@
                 <h1>Register Form {{formNumber}}</h1>
                 <form name = "registerForm">
                     <div ng-repeat = "(key,value) in data">
-                  <input  type="{{value.type}}" class ="{{value.class}}" ng-model="data[key].val" placeHolder = "{{value.placeHolder}}" class = "login">
+                  <input  type="{{value.type}}" class ="{{value.class}} form-controll login" ng-model="data[key].val" placeHolder = "{{value.placeHolder}}" class = "login">
                 </div>
 
                 <div ng-repeat="m in message">{{m}}</div>

@@ -1,0 +1,20 @@
+<div >
+        <tp-report data='data'></tp-report>
+        <h1>Items For Checkout</h1>
+        <div class="categories solid">
+        <label>Search: <input ng-model="searchText"></label>
+      </div>
+  <span class="item" ng-repeat="(key,value) in data.cart_items| filter:searchText">
+            <span>{{value.name}}$ |</span>
+            <sm>total: {{value.total}}$ |</sm>
+            <sm>price for one unit: {{value.price}}$ |</sm>
+            <sm>amount: {{value.amount}}$|</sm>
+          
+            
+            <img src="{{value.pic_url}}" alt="404 {{value.pic_url}}" width="50px">
+         <hr>
+        </span>
+        
+      <h1>Total: {{data.cart_total}}</h1>
+    </div>
+</div>

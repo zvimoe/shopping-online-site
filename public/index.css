@@ -72,7 +72,7 @@ header{
     margin:2%
 }
 .item sm{
-    font-size:10px
+    font-size:10px;
 }
 .itemLarge{
     text-align: center;
@@ -90,3 +90,8 @@ header{
   .navbar-collapse.in {
     overflow-y: hidden;
   }
+  .item_desc{
+    direction: ltr;
+    float: left;
+  }
+  
