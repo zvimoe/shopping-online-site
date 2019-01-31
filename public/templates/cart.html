@@ -11,9 +11,9 @@
             price for one unit: {{value.price}}$ |<br>
             amount: {{value.amount}} |<br>
         </div>
-            <a href =""class ="ex" ng-click = 'deleteCartItem(key)'><span class ="glyphicon glyphicon-remove" ></span></a>
-            <a class =  "plus" ng-click ='plusCartItem(key)'><span class ="glyphicon glyphicon-plus" ></span></a>
-            <a class =  "minus"ng-click = 'minusCartItem(key)'><span class ="glyphicon glyphicon-minus" ></span></a>
+            <a href =""class ="ex" ng-click = 'deleteCartItem(value.id)'><span class ="glyphicon glyphicon-remove" ></span></a>
+            <a class =  "plus" ng-click ='plusCartItem(value)'><span class ="glyphicon glyphicon-plus" ></span></a>
+            <a class =  "minus"ng-click = 'minusCartItem(value)'><span class ="glyphicon glyphicon-minus" ></span></a>
             
 
             <img src="{{value.pic_url}}" alt="404 {{value.pic_url}}" width="50px">

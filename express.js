@@ -233,7 +233,7 @@ app.post('/cart_items',function(req,res){
            else throw res1
       }).catch((err)=>{
           console.log(err)
-        return res.status('400').send(err)
+        return res.status('502').send(err)
       })
 
 })
@@ -298,6 +298,29 @@ app.post('/upload', upload.single('itemImg'), function (req, res, next) {
         res.status(500).send(err)
     })
   })
+  app.put('/cart_item/:id',function(req,res){
+      console.log(req.body)
+      
+    CartCtrl.update(req.params.id,req.body).then((rows)=>{
+        console.log(rows)
+            res.send('added')
+    }).catch((err)=>{
+        console.log(err)
+        res.status(500).send(err)
+    })
+
+  })
+  app.delete('/cart_item/:id',function(req,res){
+    console.log(req.body)
+    
+  CartCtrl.remove(req.params.id).then((rows)=>{
+          res.send('deleted')
+  }).catch((err)=>{
+      console.log(err)
+      res.status(500).send(err)
+  })
+
+})
 
 
 
